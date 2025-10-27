@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Data-Center Power Contracts Tracker</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif; margin: 24px; }
+  h1 { margin-bottom: 8px; }
+  .meta { color: #555; margin-bottom: 16px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  input[type="search"] { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; min-width: 240px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+  th { position: sticky; top: 0; background: #fafafa; cursor: pointer; }
+  tr:hover td { background: #fcfcff; }
+  .hint { font-size: 12px; color: #666; }
+</style>
+</head>
+<body>
+  <h1>AI Data-Center Power Contracts Tracker</h1>
+  <div class="meta">Public, read-only snapshot generated locally. Click headers to sort. Use search to filter rows.</div>
+  <div class="controls">
+    <input id="search" type="search" placeholder="Search company, buyer, region, technology…" aria-label="Search">
+    <span class="hint">Tip: sort by clicking any column header.</span>
+  </div>
+  <table id="tracker">
+    <thead>
+      <tr><th>Company</th><th>Total Contracted (MW/GW)</th><th>Buyer / Counterparty</th><th>Counterparty Type</th><th>Region</th><th>Market / ISO</th><th>Technology</th><th>Contract Structure</th><th>Term (Years)</th><th>Status</th><th>In-Service (Announced)</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Brookfield Renewable</td><td>10,500 MW (framework)</td><td>Microsoft</td><td>Hyperscaler / Cloud</td><td>U.S. &amp; Europe</td><td>Multiple (PJM/ERCOT/WECC/Europe)</td><td>Renewables portfolio (wind/solar + firming)</td><td>Corporate PPA Framework (multi-year)</td><td>2026–2030 delivery window</td><td>Announced</td><td>Phased 2026–2030</td><td>Largest announced renewables framework targeting data centers.</td></tr>
+<tr><td>Brookfield Renewable</td><td>Up to 3,000 MW (framework); 670 MW signed</td><td>Google</td><td>Hyperscaler / Cloud</td><td>United States (Pennsylvania)</td><td>PJM</td><td>Hydropower (Holtwood, Safe Harbor)</td><td>20‑year Corporate PPA</td><td>20</td><td>Signed (initial 670 MW)</td><td>Starting 2025</td><td>Hydro Framework Agreement to support data-center load</td></tr>
+<tr><td>NextEra Energy Resources</td><td>≈7,000 MW (≈3,000 MW online; 4,000 MW pipeline)</td><td>Multiple hyperscalers / tech</td><td>Hyperscalers / Cloud / DC operators</td><td>United States</td><td>Multiple (PJM/SPP/ERCOT/CAISO)</td><td>Wind, Solar, Storage (portfolio)</td><td>Corporate PPAs / Tolling (various)</td><td>10–20 (typical)</td><td>Mixed (operating + pipeline)</td><td>2024–2027+</td><td>Management-disclosed total tied to DC/tech buyers</td></tr>
+<tr><td>AES Corporation</td><td>Undisclosed (24/7 matching)</td><td>Google (Virginia data centers)</td><td>Hyperscaler / Cloud</td><td>Virginia, U.S.</td><td>PJM (DOM)</td><td>Portfolio mix (solar/wind/storage) for hourly matching</td><td>24/7 Carbon‑Free Energy (CFE) supply</td><td>10</td><td>Signed</td><td>2021 start; ongoing</td><td>First‑of‑its‑kind hourly CFE arrangement</td></tr>
+<tr><td>AES Corporation</td><td>650 MW</td><td>Meta</td><td>Hyperscaler / DC operator</td><td>Texas &amp; Kansas</td><td>ERCOT &amp; SPP</td><td>Solar</td><td>Corporate PPAs</td><td>15–20 (typical)</td><td>Signed / in development</td><td>2025+ CODs</td><td>Two long‑term solar PPAs to power DC growth</td></tr>
+<tr><td>ENGIE North America</td><td>260 MW</td><td>Meta</td><td>Hyperscaler / DC operator</td><td>Texas</td><td>ERCOT</td><td>Solar (Sypert Branch)</td><td>EAPA / Corporate PPA</td><td>15–20 (typical)</td><td>Signed; in construction</td><td>Late 2025</td><td>Environmental Attributes Purchase with power offtake linkage</td></tr>
+<tr><td>ENGIE North America</td><td>Up to 300 MW</td><td>Cipher Mining</td><td>AI / HPC / BTC miner DC operator</td><td>United States</td><td>Likely ERCOT / SPP (co‑located)</td><td>Wind</td><td>Corporate PPA</td><td>15–20 (typical)</td><td>Signed / announced</td><td>2025+</td><td>Powering co‑located high‑density compute</td></tr>
+
+    </tbody>
+  </table>
+
+<script>
+(function() {
+  const table = document.getElementById('tracker');
+  const tbody = table.tBodies[0];
+  const headers = Array.from(table.tHead.rows[0].cells);
+  let sortIndex = -1, sortAsc = true;
+
+  function compare(a, b) {
+    // Numeric-friendly compare when detecting MW/GW numbers; fallback to string
+    const numA = parseFloat(a.replace(/[^0-9.\-]/g, ''));
+    const numB = parseFloat(b.replace(/[^0-9.\-]/g, ''));
+    const isNumA = !isNaN(numA);
+    const isNumB = !isNaN(numB);
+    if (isNumA && isNumB) return numA - numB;
+    return a.localeCompare(b, undefined, { sensitivity: 'base' });
+  }
+
+  function sortBy(idx) {
+    const rows = Array.from(tbody.rows);
+    rows.sort((r1, r2) => {
+      const a = r1.cells[idx].textContent.trim();
+      const b = r2.cells[idx].textContent.trim();
+      const res = compare(a, b);
+      return sortAsc ? res : -res;
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  }
+
+  headers.forEach((th, idx) => {
+    th.addEventListener('click', () => {
+      if (sortIndex === idx) sortAsc = !sortAsc; else { sortIndex = idx; sortAsc = true; }
+      sortBy(idx);
+    });
+  });
+
+  // Search filter
+  const search = document.getElementById('search');
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    Array.from(tbody.rows).forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(q) ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>
